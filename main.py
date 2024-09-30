@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import asyncio
 from util_dc_bot import send_message
 
+OUR_PROJECT_NAME = 'Lazy Diffusion - 予你閒畫'
+
 url = "https://genaistars.org.tw/vote"
 response = requests.get(url)
 
@@ -33,12 +35,40 @@ for i, data in enumerate(sorted_data):
         print(f"{i+1:<8} {data['count']:<{count_width}} {data['title']:<{title_width}}")
 
 
+def rank_msg_generator():
+    return_msg = ""
+    our_rank = [i+1 for i, data in enumerate(sorted_data) if data['title'] == OUR_PROJECT_NAME][0]
 
-print("-" * 100)
-rank_mes = "Our Rank:", [i+1 for i, data in enumerate(sorted_data) if data['title'] == 'Lazy Diffusion - 予你閒畫'][0]
-print(rank_mes)
+    def gen_msg_with_rank(rank):
+        return f"Rank {rank}: {sorted_data[rank-1]['title']} - {sorted_data[rank-1]['count']} votes\n"
 
-asyncio.run(send_message(rank_mes))
+    # previous position
+    return_msg += gen_msg_with_rank(our_rank-1)
+
+    # our position
+    return_msg += gen_msg_with_rank(our_rank)
+
+    # next position
+    return_msg += gen_msg_with_rank(our_rank+1)
+
+    return_msg += "-" * 70 + "\n"
+
+    # 10th position
+    return_msg += gen_msg_with_rank(10)
+
+    return return_msg
+
+
+
+
+if __name__ == "__main__":
+    # print(rank_msg_generator())
+    asyncio.run(send_message(rank_msg_generator()))
+    
+# print("-" * 100)
+# rank_mes = "Our Rank:", [i+1 for i, data in enumerate(sorted_data) if data['title'] == OUR_PROJECT_NAME][0]
+# print(rank_mes)
+
 
 
 
